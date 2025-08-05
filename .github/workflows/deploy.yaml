@@ -1,35 +1,48 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Build Encyclopedia
-
-# Controls when the workflow will run
+name: Deploy Quartz site to GitHub Pages
+ 
 on:
-  # Triggers the workflow on push or pull request events but only for the "v4" branch
   push:
-    branches: [ "v4" ]
-  pull_request:
-    branches: [ "v4" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+    branches:
+      - v4
+ 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+ 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+ 
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    runs-on: ubuntu-22.04
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # Fetch all history for git info
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          repository: bwkeller/Research-Notes
-          path: vault
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          ls
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Dependencies
+        run: npm ci
+      - name: Clone Content Repo
+        run: git clone git@github.com:bwkeller/Research-Notes.git vault
+      - name: Build Quartz
+        run: npx quartz build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+ 
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
