@@ -39,7 +39,7 @@ export const defaultContentPageLayout: PageLayout = {
     }),
     Component.Explorer({
         title: "Contents",
-        folderDefaultState: "open",
+        folderDefaultState: "collapsed",
     }),
   ],
   right: [
