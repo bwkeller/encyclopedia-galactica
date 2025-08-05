@@ -25,10 +25,11 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
         with:
-        repository: bwkeller/Research_Notes
-        token: ${{ secrets.PRIVATE_SSH_KEY }}
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          repository: bwkeller/Research_Notes
+          path: vault
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
-          git clone git@github.com:bwkeller/Research-Notes.git vault
+          ls
